@@ -5,6 +5,9 @@ using UnityEngine;
 public class CustomEventSystem
 {
 
+    public static void TriggerPosInitMove(){
+
+    }
 }
 
 public interface IPlayerSwitchListener{

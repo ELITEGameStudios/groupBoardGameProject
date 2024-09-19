@@ -6,6 +6,7 @@ public class TurnLoopManager : MonoBehaviour
 {
     bool requiresMiddleCondition;
     [SerializeField] private bool twoDice;
+    [SerializeField] private bool doNextTurn = false;
     [SerializeField] private int projectedPosition, spotsToMiddleConnector, rollOutcome;
     [SerializeField] private GameObject middleChoiceUI;
     void PromptMiddleCondition(){
@@ -22,6 +23,15 @@ public class TurnLoopManager : MonoBehaviour
             requiresMiddleCondition = false;
             middleChoiceUI.SetActive(false);
         }
+    }
+
+    public void DoRollSystem(){
+        Roll();
+        CustomEventSystem.TriggerPosInitMove();
+        
+        if(doNextTurn){ GameManager.main.NextTurn(); }
+        
+        CardUIManager.main.SetCardUI();
     }
 
 
@@ -94,13 +104,10 @@ public class TurnLoopManager : MonoBehaviour
             newPosition -= MapManager.main.outerTilesLength;
             Player.current.AddLap(); // Adding a lap to the player's data
         }
-
-
         Player.current.SetNewPosition(newPosition);
-
-        GameManager.main.NextTurn();
-        CardUIManager.main.SetCardUI();
     }
+
+
 
     // IENumerator PostMoveNumerator(){
 
