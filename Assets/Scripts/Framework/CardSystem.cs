@@ -8,6 +8,7 @@ public class CardSystem : MonoBehaviour, IEndOfTurnListener
 
     public int usedCardsThisTurn = 0;
     public int maxCardsPerTurn = 1;
+    
 
     public List<Card> activeCards;
 
@@ -24,6 +25,29 @@ public class CardSystem : MonoBehaviour, IEndOfTurnListener
         card.Use();
         activeCards.Add(card);
 
+    }
+
+    public void UseCard(int slot){
+        Card card = Player.current.currentDeck[slot];
+        if(card == null || usedCardsThisTurn >= maxCardsPerTurn){ return;}
+        card.Use();
+        activeCards.Add(card);
+
+    }
+
+    public void TriggerPostMoveFunction(){
+
+    }
+
+    public List<IPosInitialtMoveListener> Unpack(){
+        List<IPosInitialtMoveListener> unpackedList = new List<IPosInitialtMoveListener>();
+        foreach (Card card in activeCards){
+            IPosInitialtMoveListener listener = card as IPosInitialtMoveListener;
+            if(listener != null){
+                unpackedList.Add(listener);
+            }
+        }
+        return unpackedList;
     }
     
     public void OnEndOfTurn(){

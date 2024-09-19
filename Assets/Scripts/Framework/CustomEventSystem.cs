@@ -1,12 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.ComponentModel;
+using System.Linq;
 
-public class CustomEventSystem
+public class CustomEventSystem : MonoBehaviour
 {
+    public static void TriggerPosInitMove(bool cards = false){
 
-    public static void TriggerPosInitMove(){
+        if(cards){
+            foreach ( IPosInitialtMoveListener listener in CardSystem.main.Unpack() ){
+                listener.OnPostInitialPlayerMove(Player.current);
+            }
 
+            return; }
+
+        foreach ( IPosInitialtMoveListener listener in FindObjectsOfType<MonoBehaviour>().OfType<IPosInitialtMoveListener>()){
+            listener.OnPostInitialPlayerMove(Player.current);
+        }
     }
 }
 

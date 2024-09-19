@@ -9,6 +9,8 @@ public class TurnLoopManager : MonoBehaviour
     [SerializeField] private bool doNextTurn = false;
     [SerializeField] private int projectedPosition, spotsToMiddleConnector, rollOutcome;
     [SerializeField] private GameObject middleChoiceUI;
+    public int currentTurnState = 0; // 0 is pre-roll, 1 is during initial move, 2 is post first move
+
     void PromptMiddleCondition(){
         // UI Stuff
         requiresMiddleCondition = true;
@@ -16,10 +18,18 @@ public class TurnLoopManager : MonoBehaviour
 
     }
 
+    void CheckCards(){
+        if(CardSystem.main.activeCards.Count > 0){
+            // CardSystem.main.TriggerPostMoveFunction(true);
+        }
+    }
+
     public void PassMiddleCondition(bool condition){
         // Disable UI
         if(requiresMiddleCondition){
             MovePlayerPosition(projectedPosition, condition);
+            currentTurnState = 2;
+
             requiresMiddleCondition = false;
             middleChoiceUI.SetActive(false);
         }
@@ -29,14 +39,15 @@ public class TurnLoopManager : MonoBehaviour
         Roll();
         CustomEventSystem.TriggerPosInitMove();
         
-        if(doNextTurn){ GameManager.main.NextTurn(); }
-        
+        // if(doNextTurn){ GameManager.main.NextTurn(); }
+        GameManager.main.NextTurn(); 
         CardUIManager.main.SetCardUI();
     }
 
 
 
     public void Roll(){
+        currentTurnState = 1;
         // Generate the outcome of the dice roll
         bool AtMiddle = Player.current.boardPosition >= MapManager.main.outerTilesLength; // If the players board position is over the outer tiles position BEFORE the roll, then the player is on a middle tile
         rollOutcome = Random.Range(1, twoDice ? 13 : 7); // Generates a randomized outcome with ranges dependant on if the user has a second dice or not
@@ -48,17 +59,20 @@ public class TurnLoopManager : MonoBehaviour
         
         if(AtMiddle){
             MovePlayerPosition(projectedPosition, true, rollOutcome); // Feeds the projected pos to the movePlayer function
+            currentTurnState = 2;
             return;
         }
 
         if(TestForMiddleCondition(Player.current.boardPosition, projectedPosition)){
             spotsToMiddleConnector = MapManager.main.GetSpotsPastMiddleConnector(projectedPosition);
             PromptMiddleCondition();
+            currentTurnState = 2;
             
             return;
         }
 
         MovePlayerPosition(projectedPosition, false); // Feeds the projected pos to the movePlayer function
+        currentTurnState = 2;
     }
 
     bool TestForMiddleCondition(int prePosition, int postPosition){
@@ -105,6 +119,9 @@ public class TurnLoopManager : MonoBehaviour
             Player.current.AddLap(); // Adding a lap to the player's data
         }
         Player.current.SetNewPosition(newPosition);
+        currentTurnState = 2;
+        CheckCards();
+
     }
 
 
