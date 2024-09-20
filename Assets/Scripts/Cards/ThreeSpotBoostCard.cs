@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ThreeSpotBoostCard : Card
+public class ThreeSpotBoostCard : Card, IPosInitialtMoveListener
 {
 
     public ThreeSpotBoostCard(Player _host) : base(_host){
@@ -15,23 +15,27 @@ public class ThreeSpotBoostCard : Card
     }
 
     public override void Use(){
-        Debug.Log("Default Card Use Function | Not Implemented for this card.");
+        Debug.Log("Used 3SPOTBOOST");
         isActive = true;
         //Code to play use animation
     }
     
     public override void Initialize(){
-        Debug.Log("ThreeSpotBoostCard Initialized!");
+        Debug.Log("3SPOTBOOST Initialized!");
         //Code to play init animation
     }
     
     public override void Passive(){
-        Debug.Log("This card has no passive function");
+        // Debug.Log("This card has no passive function");
         //Code to play passive animation
     }
-    
-    public override void Retire(){
-        //Code to play retire animation
+
+    public void OnPostInitialPlayerMove(Player movedPlayer){
+        
+        if(isActive){
+            TurnLoopManager.main.MovePlayerPosition(movedPlayer.boardPosition+3, TurnLoopManager.main.AtMiddle);
+            Retire();
+        }
     }
 
     // public void Retire(){

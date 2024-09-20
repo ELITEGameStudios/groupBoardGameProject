@@ -468,10 +468,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   twoDice: 0
   doNextTurn: 0
+  middleCondition: 0
+  requiresRoll: 1
   projectedPosition: 0
   spotsToMiddleConnector: 0
   rollOutcome: 0
   middleChoiceUI: {fileID: 788205198}
+  currentTurnState: 0
 --- !u!114 &192871139
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1412,7 +1415,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 192871138}
         m_TargetAssemblyTypeName: TurnLoopManager, Assembly-CSharp
-        m_MethodName: Roll
+        m_MethodName: DoRollSystem
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1740,7 +1743,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -188.29}
+  m_AnchoredPosition: {x: 0, y: -188.28998}
   m_SizeDelta: {x: 610.69, y: 376.57}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1484059462

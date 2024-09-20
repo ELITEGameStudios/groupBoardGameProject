@@ -28,17 +28,17 @@ public class GameManager : MonoBehaviour
     public void BeginGame(){
         playerNames = new List<string>();
         playerNames.Add("1690");
-        playerNames.Add("2056");
-        playerNames.Add("254");
-        playerNames.Add("1323");
-        playerNames.Add("4414");
-        playerNames.Add("5460");
-        playerNames.Add("3357");
-        playerNames.Add("118");
-        playerNames.Add("1241");
-        playerNames.Add("5406");
-        playerNames.Add("5409");
-        playerNames.Add("5596");
+        // playerNames.Add("2056");
+        // playerNames.Add("254");
+        // playerNames.Add("1323");
+        // playerNames.Add("4414");
+        // playerNames.Add("5460");
+        // playerNames.Add("3357");
+        // playerNames.Add("118");
+        // playerNames.Add("1241");
+        // playerNames.Add("5406");
+        // playerNames.Add("5409");
+        // playerNames.Add("5596");
         SetPlayers();
 
         currentPlayerIndex = 0;

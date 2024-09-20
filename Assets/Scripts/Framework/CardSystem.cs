@@ -36,7 +36,22 @@ public class CardSystem : MonoBehaviour, IEndOfTurnListener
     }
 
     public void TriggerPostMoveFunction(){
-
+        CustomEventSystem.TriggerPosInitMove(true);
+        DestroyRetiredCards();
+    }
+    void DestroyRetiredCards(){
+        foreach (Player player in Player.players){
+            for (int i = 0; i < player.currentDeck.Count; i++)
+            {
+                Card card = player.currentDeck[i];
+                if(card == null) { continue; }
+                
+                if(card.isRetired){
+                    player.currentDeck[i] = null;
+                    Debug.Log("Retired player " + player.name + " " + i.ToString());
+                }
+            }
+        }
     }
 
     public List<IPosInitialtMoveListener> Unpack(){

@@ -5,7 +5,7 @@ using UnityEngine;
 public class Player
 {
     // Core instance player data
-    string name;
+    public string name {get; private set;}
     public int boardPosition {get; private set;}
     public int ranking {get; private set;}
     // public int cardsUsed {get; private set;}
@@ -39,9 +39,11 @@ public class Player
             if(currentDeck[i] == null){
                 currentDeck[i] = newCard;
                 currentDeck[i].Initialize();
-                break;
+                return;
             }
         }
+
+        newCard = null;
     }
 
     public void UseCard(int slot){
@@ -49,7 +51,8 @@ public class Player
             if(currentDeck[slot] != null){
                 Debug.Log("Using this card");
                 currentDeck[slot].Use();
-                currentDeck[slot].Retire();
+                CardUIManager.main.SetCardUI();
+                // currentDeck[slot].Retire();
             }
             else{
                 Debug.Log("This slot is empty!");
@@ -71,12 +74,14 @@ public class Player
             // Transform player's position
             gameObject.transform.position = newTile.gameObject.transform.position;
             // Do animations, UI, Card logic, and other logic
+        }
+    }
+
+    public void PickupNewTileCard(){
+        MapTile newTile = MapManager.main.GetTile(boardPosition);
+        if(newTile != null){
             Card tileCard = newTile.GetNewCard(this);
-            
-            if(tileCard != null){
-                AddCard(tileCard);
-                Debug.Log("Card initialized allegedly");
-            }
+            if(tileCard != null){ AddCard(tileCard); }
         }
     }
 
