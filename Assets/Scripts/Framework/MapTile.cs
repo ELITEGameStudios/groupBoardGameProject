@@ -51,21 +51,21 @@ public class MapTile
     
     public Card GetNewCard(Player host){
         if(tileType == "_normal" && cardType != -1){
-            return Card.newBoostCard(host);
-            // switch(cardType){
-            //     case 0:
-            //         return Card.newBoostCard(host);
-            //     case 1:
-            //         return Card.newPassiveCard(host);
-            //     case 2:
-            //         return Card.newChanceCard(host);
-            //     case 3:
-            //         return Card.newSabotageCard(host);
-            //     case 4:
-            //         return Card.newSpecialCard(host);
-            //     default:
-            //         break;
-            // }
+            // return Card.newBoostCard(host);
+            switch(cardType){
+                case 0:
+                    return Card.newBoostCard(host);
+                case 1:
+                    return Card.newPassiveCard(host);
+                case 2:
+                    return Card.newChanceCard(host);
+                case 3:
+                    return Card.newSabotageCard(host);
+                case 4:
+                    return Card.newSpecialCard(host);
+                default:
+                    break;
+            }
         }
         return null;
     }
