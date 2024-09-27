@@ -17,8 +17,9 @@ public class MapManager : MonoBehaviour
     public int totalTiles {get; private set;} // The total amount of tiles generated
     [SerializeField] private GameObject prefabObject; // The object template to represent the tiles that we can clone into a lists
     [SerializeField] private Transform mapHostTransform; // The transform which parents all tile gameobject representations
+    [SerializeField] private Camera camera; // The camera showing the birds eye view of the game. This is done here simply because the variable it needs is here
     public Transform GetMapHostTransform {get {return mapHostTransform;} } // Allows other scripts to get mapHostTransform
-
+    [SerializeField] public Sprite[] tileSprites;
     public static MapManager main {get; private set;} 
 
     // Start is called before the first frame update
@@ -37,7 +38,7 @@ public class MapManager : MonoBehaviour
 
         // TilesPerSide must be an odd number in order to properly generate in compliance with middle tiles
         // TilesPerSide must be at least 3
-        tilesPerSide = 65; // Default value
+        tilesPerSide = 7; // Default value
         GenerateMap();
         SetMapTiles();
 
@@ -149,7 +150,8 @@ public class MapManager : MonoBehaviour
             // At the end of each side
             if(i != 3){
                 // Declares a corner tile and indexes them via concatenation for i
-                mapTiles.Add(new MapTile(assignedIndex, "_corner"+i.ToString() ));
+                // mapTiles.Add(new MapTile(assignedIndex, "_corner"+i.ToString() ));
+                mapTiles.Add(new MapTile(assignedIndex, "_normal" ));
                 assignedIndex++;
             }
             else{
@@ -281,6 +283,9 @@ public class MapManager : MonoBehaviour
         }
         
         Debug.Log("Assigned gameObjects to map tile object...");
+
+        camera.transform.position = new Vector3( tilesPerSide+1, tilesPerSide+1, -10);
+        camera.orthographicSize= tilesPerSide+3;
     }
 
     public void SetMapTiles(){

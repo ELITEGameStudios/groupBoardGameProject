@@ -18,6 +18,7 @@ public class TileObjectUI : MonoBehaviour
     {
         tileTypeText.text = type.ToString();
     }
+
     public void SetCardTypeText(int type)
     {
         switch (type){
@@ -37,5 +38,32 @@ public class TileObjectUI : MonoBehaviour
                 tileCardTypeText.text = "SPECIAL";
                 break;
         }
+    }
+
+    public void SetSprite(int type)
+    {
+        spriteRenderer.sprite = MapManager.main.tileSprites[type];
+        // switch (type){
+        //     case "BOOST":
+        //         spriteRenderer.sprite = MapManager.main.tileSprites[0];
+        //         break;
+
+        //     case "PASSIVE":
+        //         spriteRenderer.sprite = MapManager.main.tileSprites[1];
+        //         break;
+
+        //     case "CHANCE":
+        //         spriteRenderer.sprite = MapManager.main.tileSprites[2];
+        //         break;
+
+        //     case "SABOTAGE":
+        //         spriteRenderer.sprite = MapManager.main.tileSprites[3];
+        //         break;
+
+        //     case "SPECIAL":
+        //         spriteRenderer.sprite = MapManager.main.tileSprites[4];
+        //         break;
+
+        // }
     }
 }

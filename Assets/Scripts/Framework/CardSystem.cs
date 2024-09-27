@@ -39,7 +39,7 @@ public class CardSystem : MonoBehaviour, IEndOfTurnListener
         CustomEventSystem.TriggerPosInitMove(true);
         DestroyRetiredCards();
     }
-    void DestroyRetiredCards(){
+    public void DestroyRetiredCards(){
         foreach (Player player in Player.players){
             for (int i = 0; i < player.currentDeck.Count; i++)
             {
@@ -52,6 +52,8 @@ public class CardSystem : MonoBehaviour, IEndOfTurnListener
                 }
             }
         }
+
+        CardUIManager.main.SetCardUI();
     }
 
     public List<IPosInitialtMoveListener> Unpack(){

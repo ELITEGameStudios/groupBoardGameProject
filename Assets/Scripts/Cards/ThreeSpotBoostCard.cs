@@ -32,7 +32,7 @@ public class ThreeSpotBoostCard : Card, IPosInitialtMoveListener
     public void OnPostInitialPlayerMove(Player movedPlayer){
         
         if(isActive){
-            TurnLoopManager.main.MovePlayerPosition(movedPlayer.boardPosition+3, TurnLoopManager.main.AtMiddle);
+            TurnLoopManager.main.MovePlayerPosition(movedPlayer.boardPosition+3, movedPlayer,TurnLoopManager.main.AtMiddle);
             Retire();
         }
     }

@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 8398549305308557045}
   - component: {fileID: 4805911012539094353}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: TileObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -135,7 +135,7 @@ MonoBehaviour:
   tileIndexText: {fileID: 1427537128099694725}
   tileTypeText: {fileID: 9129880228929168139}
   tileCardTypeText: {fileID: 4070405643694606556}
-  spriteRenderer: {fileID: 0}
+  spriteRenderer: {fileID: 277763980316630424}
   playerName: 
 --- !u!1 &4371432154539787013
 GameObject:
@@ -223,7 +223,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4371432154539787013}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
   m_Name: 
@@ -394,7 +394,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8045532434670271207}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
   m_Name: 

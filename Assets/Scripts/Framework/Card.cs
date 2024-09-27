@@ -70,6 +70,7 @@ public class Card
         // When the card has completed its lifespan and is ready to be thrown into the shadow realm
         isActive = false;
         isRetired = true;
+        CardSystem.main.DestroyRetiredCards();
     }
 
     /* These methods are static, and are only used to declare new instances of child card classes 
@@ -94,7 +95,7 @@ public class Card
         
         switch (index) {
             case 0:
-                return new BackTrack(_host, Random.Range(0, 2));
+                return new BackTrack(_host, Random.Range(1, 9));
             case 1:
                 return new SabotageDefender(_host);
             default:
@@ -124,7 +125,7 @@ public class Card
         
         switch (index) {
             case 0:
-                return new BackTrack(_host, Random.Range(0, 10));
+                return new BackTrack(_host, Random.Range(1, 10));
             case 1:
                 return new SabotageDefender(_host);
             default:

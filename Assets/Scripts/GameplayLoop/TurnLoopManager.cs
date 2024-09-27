@@ -32,17 +32,6 @@ public class TurnLoopManager : MonoBehaviour
         }
     }
 
-    // public void PassMiddleCondition(bool condition){
-    //     // Disable UI
-    //     if(requiresMiddleCondition){
-    //         MovePlayerPosition(projectedPosition, condition);
-    //         currentTurnState = 2;
-
-    //         requiresMiddleCondition = false;
-    //         middleChoiceUI.SetActive(false);
-    //     }
-    // }
-    
     public void PassMiddleCondition(bool condition){
         // Disable UI
         if(requiresMiddleCondition){
@@ -57,16 +46,15 @@ public class TurnLoopManager : MonoBehaviour
 
     public void DoRollSystem(){
         requiresRoll = false;
-        // Roll();
-        // CustomEventSystem.TriggerPosInitMove();
-        
-        // if(doNextTurn){ GameManager.main.NextTurn(); }
     }
 
     public bool AtMiddle {
         get {
             return Player.current.boardPosition >= MapManager.main.outerTilesLength; // If the players board position is over the outer tiles position BEFORE the roll, then the player is on a middle tile
         }
+    }
+    public bool PlayerAtMiddle(Player player) {
+        return player.boardPosition >= MapManager.main.outerTilesLength; // If the players board position is over the outer tiles position BEFORE the roll, then the player is on a middle tile
     }
 
 
@@ -112,7 +100,7 @@ public class TurnLoopManager : MonoBehaviour
 
         return false;
     }
-    public void MovePlayerPosition(int newPosition, bool middle = false, int roll = -1){
+    public void MovePlayerPosition(int newPosition, Player player, bool middle = false, int roll = -1){
         // Moving forward, middle tile detection must still be added with the option of travelling through the mid lane
         if(middle){
             if(newPosition >= MapManager.main.totalTiles){
@@ -126,22 +114,33 @@ public class TurnLoopManager : MonoBehaviour
                 middle = false;
                 
             }
-            else if(!AtMiddle) { // This means the player is currently on the normal board, and transitioning to the middle
+            else if(!PlayerAtMiddle(player)) { // This means the player is currently on the normal board, and transitioning to the middle
                 int overlapSpots = MapManager.main.GetSpotsPastMiddleConnector(newPosition);
                 newPosition = (MapManager.main.outerTilesLength-1) + overlapSpots;
             }
-            
+            else if(newPosition < MapManager.main.outerTilesLength && PlayerAtMiddle(player)){ // Player is being sabotaged back from the middle tiles
+                int difference = newPosition - player.boardPosition;
+
+                // Debug.Log(newPosition+ " IS THE NEW POSITION");
+                // Debug.Log(difference + " IS THE DIFFERENCE");
+
+                Debug.Log( MapManager.main.GetMiddleTile().index );
+                newPosition = MapManager.main.GetMiddleTile().index + (difference+1 - (MapManager.main.outerTilesLength - player.boardPosition));
+                
+                // Debug.Log(newPosition+ " IS THE NEW NEW POSITION");
+            }
 
         }
-
         if(newPosition >= MapManager.main.outerTilesLength && !middle){
             // If this condition is met, the player has completed a loop and is now trying to access a position thats not on the board
             // We correct this by setting the position to the difference between the max outer tile index and the projected position
             newPosition -= MapManager.main.outerTilesLength;
-            Player.current.AddLap(); // Adding a lap to the player's data
+            player.AddLap(); // Adding a lap to the player's data
         }
+        if(newPosition < 0 && !middle){ newPosition = 0; }
+
         Debug.Log("Moved the player to " + newPosition.ToString());
-        Player.current.SetNewPosition(newPosition);
+        player.SetNewPosition(newPosition);
         currentTurnState = 2;
         // CheckCards();
 
@@ -161,10 +160,10 @@ public class TurnLoopManager : MonoBehaviour
                 while (requiresMiddleCondition){ yield return null; } // Stops execution until the player decides which path to choose
                 // When PassMiddleConditionNew is called, it will set requiresMiddleCondition to false and set the middlePosition variable accordingly
                 
-                MovePlayerPosition(projectedPosition, middleCondition, rollOutcome); // Moves the player through the chosen path 
+                MovePlayerPosition(projectedPosition, Player.current, middleCondition, rollOutcome); // Moves the player through the chosen path 
             }
             else{
-                MovePlayerPosition(projectedPosition, AtMiddle, rollOutcome); // A standard roll and move if the ccondition is not required
+                MovePlayerPosition(projectedPosition, Player.current, AtMiddle, rollOutcome); // A standard roll and move if the ccondition is not required
             }
 
             // Logic after the main roll

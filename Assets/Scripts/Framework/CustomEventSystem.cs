@@ -19,6 +19,13 @@ public class CustomEventSystem : MonoBehaviour
             listener.OnPostInitialPlayerMove(Player.current);
         }
     }
+
+    public static void TriggerPreSabotage(Player player){
+
+        foreach ( ISabotagePlayerListener listener in FindObjectsOfType<MonoBehaviour>().OfType<ISabotagePlayerListener>()){
+            listener.OnPlayerSabotage(Player.current, player);
+        }
+    }
 }
 
 public interface IPlayerSwitchListener{

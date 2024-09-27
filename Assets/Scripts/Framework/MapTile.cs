@@ -45,6 +45,7 @@ public class MapTile
             cardType = type;
             if(graphicsHelper != null){
                 graphicsHelper.SetCardTypeText(cardType);
+                graphicsHelper.SetSprite(cardType);
             }
         }
     }
