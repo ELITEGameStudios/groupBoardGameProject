@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SabotageDefender : Card
+public class SabotageDefender : Card, ITurnSwitchListener
 {
 
     public SabotageDefender(Player _host) : base(_host){
@@ -15,7 +15,7 @@ public class SabotageDefender : Card
     }
 
     public override void Use(){
-        Debug.Log("Default Card Use Function | Not Implemented for this card.");
+        Debug.Log("Using the shield.");
         host.SabotageProtected(true);
         isActive = true;
         //Code to play use animation
@@ -38,5 +38,11 @@ public class SabotageDefender : Card
         //Code to play retire animation
     }
 
-
+    public void OnNextTurn(Player newPlayer)
+    {
+        if (Player.current == host && isActive){
+            Debug.Log("YOUR SHIELD IS GONE!");
+            Retire();
+        }
+    }
 }

@@ -29,7 +29,7 @@ public class ThreeSpotBoostCard : Card, IPosInitialtMoveListener
     
     // Notice that Retire() and Passive()  is not implemented, because I do not need to immplement personalized code for this card on those events
 
-    public void OnPostInitialPlayerMove(Player movedPlayer){
+    public void OnPostPlayerMove(Player movedPlayer){
         
         if(isActive){
             TurnLoopManager.main.MovePlayerPosition(movedPlayer.boardPosition+3, movedPlayer,TurnLoopManager.main.AtMiddle);

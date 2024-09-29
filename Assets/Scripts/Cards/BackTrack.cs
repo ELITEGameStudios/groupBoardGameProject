@@ -33,6 +33,9 @@ public class BackTrack : Card
         if(!player.isSabotageProtected){
             TurnLoopManager.main.MovePlayerPosition(player.boardPosition - intensity, player, TurnLoopManager.main.PlayerAtMiddle(player));
         }
+        else{
+            Debug.Log("YOU HAVE BEEN PROTECTED");
+        }
 
         Retire();
         //Code to play use animation

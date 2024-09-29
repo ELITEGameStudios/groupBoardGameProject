@@ -6,17 +6,22 @@ public class TurnLoopManager : MonoBehaviour
 {
     bool requiresMiddleCondition;
     [SerializeField] private bool twoDice;
-    [SerializeField] private bool doNextTurn = true, middleCondition = false, requiresRoll = true;
-    [SerializeField] private int projectedPosition, spotsToMiddleConnector, rollOutcome;
+    [SerializeField] private bool extraTurn, middleCondition = false, requiresRoll = true;
+    [SerializeField] private int projectedPosition, spotsToMiddleConnector;
     [SerializeField] private GameObject middleChoiceUI;
     public int currentTurnState = 0; // 0 is pre-roll, 1 is during initial move, 2 is post first move
+    public int rollOutcome = 0; // 0 is pre-roll, 1 is during initial move, 2 is post first move
     public static TurnLoopManager main { get; private set;}
 
     void Awake() {
         if(main == null){ main = this; }
         else if(main != this ){ Destroy(this);}
 
-        StartCoroutine("MainLoopNumerator"); // Starts the main game loop
+    }
+
+    void Start(){
+        StartCoroutine("MainLoopCoroutine"); // Starts the main game loop
+
     }
 
     void PromptMiddleCondition(){
@@ -57,22 +62,14 @@ public class TurnLoopManager : MonoBehaviour
         return player.boardPosition >= MapManager.main.outerTilesLength; // If the players board position is over the outer tiles position BEFORE the roll, then the player is on a middle tile
     }
 
-
-
-    public int Roll(){
-        currentTurnState = 1;
-        // Generate the outcome of the dice roll
-        rollOutcome = Random.Range(1, twoDice ? 13 : 7); // Generates a randomized outcome with ranges dependant on if the user has a second dice or not
-        
-        // rollOutcome = 1;
-        
+    void ProjectPosition(){
         projectedPosition = Player.current.boardPosition + rollOutcome; // The position the player should be after this move has been completed
         // DoUiFunction();
         
         if(AtMiddle){
             // MovePlayerPosition(projectedPosition, true, rollOutcome); // Feeds the projected pos to the movePlayer function
             currentTurnState = 2;
-            return rollOutcome;
+            return;
         }
 
         if(TestForMiddleCondition(Player.current.boardPosition, projectedPosition)){
@@ -80,13 +77,15 @@ public class TurnLoopManager : MonoBehaviour
             PromptMiddleCondition();
             currentTurnState = 2;
             
-            return rollOutcome;
+            return;
         }
 
         // MovePlayerPosition(projectedPosition, false); // Feeds the projected pos to the movePlayer function
         currentTurnState = 2;
-        return rollOutcome;
+        return;
+
     }
+
 
     bool TestForMiddleCondition(int prePosition, int postPosition){
         MapTile enterTile = MapManager.main.GetMiddleTile();
@@ -143,46 +142,81 @@ public class TurnLoopManager : MonoBehaviour
         player.SetNewPosition(newPosition);
         currentTurnState = 2;
         // CheckCards();
+    }
 
+    public void GiveExtraTurn(){
+        extraTurn = true;
+    }
+
+    public void ChangeRollOutcome(int newOutcome){
+        rollOutcome = newOutcome;
+    }
+    
+    public void Roll(){
+        currentTurnState = 1;
+        // Generate the outcome of the dice roll
+        rollOutcome = Random.Range(1, twoDice ? 13 : 7); // Generates a randomized outcome with ranges dependant on if the user has a second dice or not
+        return;
+        // rollOutcome = 1;
+    }
+
+    IEnumerator RollAnimationCoroutine(){
+        float timer = 2;
+        while (timer > 0){
+            
+            GlobalUI.main.GetRollOutcomeText().text = Random.Range(0, twoDice ? 13 : 7).ToString();
+            timer -= Time.deltaTime;
+            yield return null;
+        }
     }
 
 
-
-    IEnumerator MainLoopNumerator(){
+    IEnumerator MainLoopCoroutine(){
         
+        // As long as this loop continues, the game will continue... forever
         while(true){
-            // NormalTurnLoopPhase
+            /* Preroll phase */
+
+            CustomEventSystem.TriggerNewTurn();
+            CardUIManager.main.SetCardUI();
+
+            // Ensures that a player will need to provide input before proceeding loop repeats            
+            requiresRoll = true;
             while(requiresRoll) {yield return null; } // Halts execution until the player wants to roll
+            yield return StartCoroutine("RollAnimationCoroutine");
 
-            int rollOutcome = Roll(); // Rolls and stores outcome
+            /* Roll phase */
+            Roll(); // Rolls and generates outcome
+            GlobalUI.main.GetRollOutcomeText().text = rollOutcome.ToString(); // Sets UI To show Roll 
+            CustomEventSystem.TriggerPrePlayerMove(); // Any logic to modify the outcome or game events before projecting position
+            ProjectPosition(); // Projects the new position of the player and prompts for middle condition if needed
 
+            /* Middle choice and player movement phase */
             if(requiresMiddleCondition){ // Checks if the middle condition is required
                 while (requiresMiddleCondition){ yield return null; } // Stops execution until the player decides which path to choose
                 // When PassMiddleConditionNew is called, it will set requiresMiddleCondition to false and set the middlePosition variable accordingly
-                
                 MovePlayerPosition(projectedPosition, Player.current, middleCondition, rollOutcome); // Moves the player through the chosen path 
             }
             else{
                 MovePlayerPosition(projectedPosition, Player.current, AtMiddle, rollOutcome); // A standard roll and move if the ccondition is not required
             }
 
-            // Logic after the main roll
-            CheckPostMoveCards();
+            /* Post movement phase */
 
-            //Move Player To
-            // if(doNextTurn){ // A method will be made so that the card system can halt the next turn if a card deems so
-            //     GameManager.main.NextTurn(); 
-            // }
+            // Custom logic at this phase including card effects
+            CustomEventSystem.TriggerPosInitMove(true);
             
+            // Background card management
+            CheckPostMoveCards();
             Player.current.PickupNewTileCard();
-            GameManager.main.NextTurn(); 
-            CardUIManager.main.SetCardUI();
 
-            Debug.Log("Done");
-
-            requiresRoll = true; // Ensures that a player will need to provide input before this loop repeats
+            // Extra turn handler
+            if(!extraTurn){  GameManager.main.NextTurn(); }
+            else{ extraTurn = !extraTurn; }
+            
+            
+            Debug.Log("Finished main gameloop iteration! Starting again!");
         }
-
-
     }
+
 }

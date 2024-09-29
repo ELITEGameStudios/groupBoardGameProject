@@ -6,17 +6,23 @@ using System.Linq;
 
 public class CustomEventSystem : MonoBehaviour
 {
+    public static void TriggerPrePlayerMove(){
+        foreach ( IPretMoveListener listener in FindObjectsOfType<MonoBehaviour>().OfType<IPretMoveListener>()){
+            listener.OnPrePlayerMove(Player.current, TurnLoopManager.main.rollOutcome);
+        }
+    }
+
     public static void TriggerPosInitMove(bool cards = false){
 
         if(cards){
             foreach ( IPosInitialtMoveListener listener in CardSystem.main.Unpack() ){
-                listener.OnPostInitialPlayerMove(Player.current);
+                listener.OnPostPlayerMove(Player.current);
             }
 
             return; }
 
         foreach ( IPosInitialtMoveListener listener in FindObjectsOfType<MonoBehaviour>().OfType<IPosInitialtMoveListener>()){
-            listener.OnPostInitialPlayerMove(Player.current);
+            listener.OnPostPlayerMove(Player.current);
         }
     }
 
@@ -26,10 +32,16 @@ public class CustomEventSystem : MonoBehaviour
             listener.OnPlayerSabotage(Player.current, player);
         }
     }
+    public static void TriggerNewTurn(){
+
+        foreach ( ITurnSwitchListener listener in FindObjectsOfType<MonoBehaviour>().OfType<ITurnSwitchListener>()){
+            listener.OnNextTurn(Player.current);
+        }
+    }
 }
 
-public interface IPlayerSwitchListener{
-    public void OnPlayerSabotage(Player oldPlayer, Player newPlayer);   
+public interface ITurnSwitchListener{
+    public void OnNextTurn(Player newPlayer);   
 }
 
 public interface ISabotagePlayerListener{
@@ -37,7 +49,10 @@ public interface ISabotagePlayerListener{
 }
 
 public interface IPosInitialtMoveListener{
-    public void OnPostInitialPlayerMove(Player movedPlayer);
+    public void OnPostPlayerMove(Player movedPlayer);
+}
+public interface IPretMoveListener{
+    public void OnPrePlayerMove(Player movedPlayer, int initialRollOutcome);
 }
 
 public interface IEndOfTurnListener{

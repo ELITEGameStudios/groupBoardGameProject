@@ -36,7 +36,6 @@ public class CardSystem : MonoBehaviour, IEndOfTurnListener
     }
 
     public void TriggerPostMoveFunction(){
-        CustomEventSystem.TriggerPosInitMove(true);
         DestroyRetiredCards();
     }
     public void DestroyRetiredCards(){
