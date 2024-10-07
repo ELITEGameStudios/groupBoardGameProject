@@ -5,8 +5,15 @@ using UnityEngine;
 public class CardUIManager : MonoBehaviour
 {
     public static CardUIManager main { get; private set;}
-    [SerializeField] private List<CardUI> cardUIPanels;
-
+    [SerializeField] private TopHUDScript topHUD;
+    [SerializeField] private MainCardUIPanel mainCardHUD;
+    public Color32[] cardColors;
+    public Sprite[] boostSprites;
+    public Sprite[] passiveSprites;
+    public Sprite[] sabotageSprites;
+    public Sprite[] chanceSprites;
+    public Sprite[] specialSprites;
+    public Sprite unknownSprite;
 
     // Start is called before the first frame update
     void Awake()
@@ -16,14 +23,22 @@ public class CardUIManager : MonoBehaviour
     }
 
     public void SetCardUI(){
-        for (int i = 0; i < Player.current.currentDeck.Count; i++)
-        {
-            if(Player.current.currentDeck[i] != null){
-                cardUIPanels[i].SetCard(Player.current.currentDeck[i]);
-            } 
-            else{
-                cardUIPanels[i].SetCard();
-            }
-        }
+        mainCardHUD.SetCardUI();
+        mainCardHUD.CardButtonRefresh();
+        topHUD.UpdateElements();
+    }
+
+    public void SetUIRetract(bool retract, float targetTime = 1){
+        topHUD.SetPos(retract, targetTime);
+        mainCardHUD.SetPos(retract, targetTime);
+    }
+
+    public void QuickToggleUIRetract(){
+        topHUD.SetPos(!topHUD.retracted);
+        mainCardHUD.SetPos(!topHUD.retracted);
+    }
+
+    public void Initialize(){
+        topHUD.SetupElements();
     }
 }

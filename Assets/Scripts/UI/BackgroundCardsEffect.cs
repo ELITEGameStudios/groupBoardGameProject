@@ -6,6 +6,7 @@ public class BackgroundCardsEffect : MonoBehaviour
 {
     [SerializeField] private List<GameObject> list;
     [SerializeField] private GameObject prefab;
+    [SerializeField] private Transform spawnTf;
     [SerializeField] private float offsetTime;
     [SerializeField] private int offsetIterations, currentIterations, height, spread, speed;
     // Start is called before the first frame update
@@ -30,12 +31,13 @@ public class BackgroundCardsEffect : MonoBehaviour
             yield return new WaitForSeconds(offsetTime);
             for (int i = 0; i < 2; i++)
             {
-                GameObject newObject = Instantiate(prefab, transform);
+                GameObject newObject = Instantiate(prefab, spawnTf);
                 newObject.transform.position = new Vector3(Random.Range(-spread, spread), height + Random.Range(-4.0f, 4.0f));
                 newObject.transform.localEulerAngles= new Vector3(0, 0, Random.Range(-45, 45));
                 list.Add(newObject);
 
                 if(offsetIterations <= currentIterations){
+                    Destroy(list[0].gameObject);
                     list.RemoveAt(0);
                 }
                 

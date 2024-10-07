@@ -4,45 +4,40 @@ using UnityEngine;
 
 public class SabotageDefender : Card, ITurnSwitchListener
 {
-
-    public SabotageDefender(Player _host) : base(_host){
+    int rolls;
+    public SabotageDefender(Player _host, bool special = false) : base(_host){
         host = _host;
 
-        type = 0;
-        index = 0;
-        title = "Shield";
-        description = "Protects you from a sabotage attack until your next roll";
+        rolls = special ? 4 : 2;
+        type = special ? 4 : 1;
+        index = special ? 1 : 0;
+        title = special ? "Guardian" : "Protector";
+        description = $"Protects you from a sabotage attack for {rolls} rolls";
     }
 
     public override void Use(){
-        Debug.Log("Using the shield.");
-        host.SabotageProtected(true);
-        isActive = true;
-        //Code to play use animation
+        Retire();
     }
     
     public override void Initialize(){
-        Debug.Log("Sabotage Defender Initialized!");
-
-        //Code to play init animation
-    }
-    
-    public override void Passive(){
-        Debug.Log("This card has no passive function");
-        //Code to play passive animation
+        Debug.Log("Using the shield.");
+        host.SabotageProtected(true);
+        isActive = true;
+        CardSystem.main.activeCards.Add(this);
     }
     
     public override void Retire(){
+        Debug.Log($"BYEBYE");
         host.SabotageProtected(false);
-        isRetired = true;
-        //Code to play retire animation
+        base.Retire();
     }
 
     public void OnNextTurn(Player newPlayer)
     {
-        if (Player.current == host && isActive){
-            Debug.Log("YOUR SHIELD IS GONE!");
-            Retire();
+        Debug.Log($"HEY LOOK I ONLY HAVE {rolls} ROLLS LEFT!");
+        if (Player.current == host){
+            rolls--;
+            if(rolls <= 0){ Retire(); }
         }
     }
 }

@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CardSystem : MonoBehaviour, IEndOfTurnListener
+public class CardSystem : MonoBehaviour, ITurnSwitchListener
 {
     public static CardSystem main { get; private set;}
 
     public int usedCardsThisTurn = 0;
     public int maxCardsPerTurn = 1;
+
     
 
     public List<Card> activeCards;
@@ -21,19 +22,23 @@ public class CardSystem : MonoBehaviour, IEndOfTurnListener
     }
 
     public void UseCard(Card card){
-        if(card == null || usedCardsThisTurn >= maxCardsPerTurn){ return;}
+        if(card == null || !CanUseCard){ return;}
         card.Use();
         activeCards.Add(card);
+        if(!(card is SabotageDefender) || !(card is BaseStealer)){usedCardsThisTurn++;}
 
     }
 
     public void UseCard(int slot){
         Card card = Player.current.currentDeck[slot];
-        if(card == null || usedCardsThisTurn >= maxCardsPerTurn){ return;}
+        if(card == null || !CanUseCard){ return;}
         card.Use();
         activeCards.Add(card);
-
+        if(card.type != 1){usedCardsThisTurn++;}
+        CardUIManager.main.SetCardUI();
     }
+
+    public bool CanUseCard {get {return usedCardsThisTurn < maxCardsPerTurn;}}
 
     public void TriggerPostMoveFunction(){
         DestroyRetiredCards();
@@ -55,23 +60,19 @@ public class CardSystem : MonoBehaviour, IEndOfTurnListener
         CardUIManager.main.SetCardUI();
     }
 
-    public List<IPosInitialtMoveListener> Unpack(){
-        List<IPosInitialtMoveListener> unpackedList = new List<IPosInitialtMoveListener>();
+
+    public List<T> UnpackActiveCards<T>(){
+        List<T> unpackedList = new List<T>();
         foreach (Card card in activeCards){
-            IPosInitialtMoveListener listener = card as IPosInitialtMoveListener;
-            if(listener != null){
-                unpackedList.Add(listener);
-            }
+            if (card is T listener)
+            {unpackedList.Add(listener); }
         }
+
+        Debug.Log("This should be working with a return list length of " + unpackedList.Count);
         return unpackedList;
     }
-    
-    public void OnEndOfTurn(){
-        foreach (Card card in activeCards)
-        {
-            if(card.retireMode == 0){
-                card.Retire();
-            }
-        }
+
+    public void OnNextTurn(Player player){
+        usedCardsThisTurn = 0;
     }
 }

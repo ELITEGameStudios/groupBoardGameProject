@@ -20,22 +20,14 @@ public class Card
         This base class declares variables and methods that the child classes will define
     */
 
-
-    public Sprite cardSprite {get; protected set;} // The image for this card to use
     public string title {get; protected set;} // The title and description text for the card
     public string description {get; protected set;} // The title and description text for the card
-    protected int type, index; // The indexes which specify the card type itself
-    public int retireMode {get; protected set;}
+    public int type {get; protected set;} // The indexes which specify the card type itself
+    public int index {get; protected set;} // The indexes which specify the card type itself
     public bool isActive {get; protected set;}
     public bool isRetired {get; protected set;}
     protected Player host;
 
-
-    public Card(Player _host, int _type, int _index){
-        host = _host;
-        type = _type;
-        index = _index;
-    }
 
     // This constructor is what the child classes will reference
     // All it needs is the player which called it, which in most cases is just the current player
@@ -43,29 +35,15 @@ public class Card
         host = _host;
     }
 
-    public Card(Player _host, int _type){
-        host = _host;
-        type = _type;
-        index = 0;
-        title = "Unspecified Card";
-        description = "Default Card Object";
-    }
-
     // These will be overridden by the child classes
     public virtual void Use(){
         // When the Player decides to use the card
-        Debug.Log("Default Card Use Function | Not Implemented for this card.");
         isActive = true;
     }
     public virtual void Initialize(){
         // When the Player first picks up the card
-        Debug.Log("Default Card Initialize Function | Not Implemented for this card.");
     }
-    public virtual void Passive(){
-        // Called after every move of the player -- I just realized when documenting this that this renders another function in FastTrack useless lol, I may fix that
-        // Or i may delete this entirely
-        Debug.Log("This card has no passive function");
-    }
+
     public virtual void Retire(){
         // When the card has completed its lifespan and is ready to be thrown into the shadow realm
         isActive = false;
@@ -73,29 +51,36 @@ public class Card
         CardSystem.main.DestroyRetiredCards();
     }
 
+    public Sprite GetSprite(){
+        Debug.Log(index);
+        switch(type){
+            case 0: 
+                return CardUIManager.main.boostSprites[index];
+            case 1:
+                return CardUIManager.main.passiveSprites[index];
+            case 2:
+                return CardUIManager.main.chanceSprites[index];
+            case 3:
+                return CardUIManager.main.sabotageSprites[index];
+            case 4:
+                return CardUIManager.main.specialSprites[index];
+        }
+
+        return CardUIManager.main.unknownSprite;
+    }
+
     /* These methods are static, and are only used to declare new instances of child card classes 
         Map tiles will decide which of these functions to call based on its type, and in all normal tile cases declare a random card of that type */
     public static Card newBoostCard(Player _host, int index = -1) {  // Pass the child constructor of new cards depending on their index
+        return new FastTrackBoostCard(_host);
+    }
+    public static Card newPassiveCard(Player _host, int index = -1){
         
         if(index == -1) {index = Random.Range(0, 2);}
         
         switch (index) {
             case 0:
-                return new ThreeSpotBoostCard(_host);
-            case 1:
-                return new SabotageDefender(_host);
-            default:
-                break;
-        }
-        return null;
-    }
-    public static Card newPassiveCard(Player _host, int index = -1){
-        
-        if(index == -1) {index = Random.Range(0, 1);}
-        
-        switch (index) {
-            case 0:
-                return new BackTrack(_host, Random.Range(1, 9));
+                return new BaseStealer(_host);
             case 1:
                 return new SabotageDefender(_host);
             default:
@@ -106,43 +91,26 @@ public class Card
     }
     public static Card newChanceCard(Player _host, int index = -1){
         
-        if(index == -1) {index = Random.Range(0, 1);}
-        
-        switch (index) {
-            case 0:
-                return new LuckyRoll(_host);
-            case 1:
-                return new SabotageDefender(_host);
-            default:
-                break;
-        }
-        return null;
-
+        return new LuckyRoll(_host);
     }
     public static Card newSabotageCard(Player _host, int index = -1){
         
-        if(index == -1) {index = Random.Range(0, 1);}
-        
-        switch (index) {
-            case 0:
-                return new BackTrack(_host, Random.Range(1, 10));
-            case 1:
-                return new SabotageDefender(_host);
-            default:
-                break;
-        }
-        return null;
+        return new BackTrack(_host, Random.Range(2, 7));
 
     }
     public static Card newSpecialCard(Player _host, int index = -1){
         
-        if(index == -1) {index = Random.Range(0, 1);}
+        if(index == -1) {index = Random.Range(0, 4);}
 
         switch (index) {
             case 0:
-                return new ThreeSpotBoostCard(_host);
+                return new FastTrackBoostCard(_host, true);
             case 1:
-                return new SabotageDefender(_host);
+                return new SabotageDefender(_host, true);
+            case 2:
+                return new BaseStealer(_host, true);
+            case 3:
+                return new BackTrack(_host, Random.Range(6, 15), true);
             default:
                 break;
         }

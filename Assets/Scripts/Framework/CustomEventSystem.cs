@@ -7,32 +7,28 @@ using System.Linq;
 public class CustomEventSystem : MonoBehaviour
 {
     public static void TriggerPrePlayerMove(){
-        foreach ( IPretMoveListener listener in FindObjectsOfType<MonoBehaviour>().OfType<IPretMoveListener>()){
+        foreach ( IPreMoveListener listener in CardSystem.main.UnpackActiveCards<IPreMoveListener>()){
             listener.OnPrePlayerMove(Player.current, TurnLoopManager.main.rollOutcome);
         }
     }
 
-    public static void TriggerPosInitMove(bool cards = false){
-
-        if(cards){
-            foreach ( IPosInitialtMoveListener listener in CardSystem.main.Unpack() ){
-                listener.OnPostPlayerMove(Player.current);
-            }
-
-            return; }
-
-        foreach ( IPosInitialtMoveListener listener in FindObjectsOfType<MonoBehaviour>().OfType<IPosInitialtMoveListener>()){
+    public static void TriggerPosInitMove(){
+        foreach ( IPosInitialtMoveListener listener in CardSystem.main.UnpackActiveCards<IPosInitialtMoveListener>() ){
             listener.OnPostPlayerMove(Player.current);
         }
     }
 
     public static void TriggerPreSabotage(Player player){
 
-        foreach ( ISabotagePlayerListener listener in FindObjectsOfType<MonoBehaviour>().OfType<ISabotagePlayerListener>()){
+        foreach ( ISabotagePlayerListener listener in CardSystem.main.UnpackActiveCards<ISabotagePlayerListener>()){
             listener.OnPlayerSabotage(Player.current, player);
         }
     }
     public static void TriggerNewTurn(){
+
+        foreach ( ITurnSwitchListener listener in CardSystem.main.UnpackActiveCards<ITurnSwitchListener>()){
+            listener.OnNextTurn(Player.current);
+        }
 
         foreach ( ITurnSwitchListener listener in FindObjectsOfType<MonoBehaviour>().OfType<ITurnSwitchListener>()){
             listener.OnNextTurn(Player.current);
@@ -51,10 +47,6 @@ public interface ISabotagePlayerListener{
 public interface IPosInitialtMoveListener{
     public void OnPostPlayerMove(Player movedPlayer);
 }
-public interface IPretMoveListener{
+public interface IPreMoveListener{
     public void OnPrePlayerMove(Player movedPlayer, int initialRollOutcome);
-}
-
-public interface IEndOfTurnListener{
-    public void OnEndOfTurn();
 }

@@ -36,10 +36,6 @@ public class MapTile
         graphicsHelper.SetTypeText(tileType);
     }
 
-    void Shout(){
-        Debug.Log("I EXIST! ID: " + index);
-    }
-
     public void SetTileType(int type){
         if(tileType == "_normal"){
             cardType = type;
@@ -48,10 +44,18 @@ public class MapTile
                 graphicsHelper.SetSprite(cardType);
             }
         }
+        else if(tileType == "_special"){
+
+            cardType = 4;
+            if(graphicsHelper != null){
+                graphicsHelper.SetCardTypeText(cardType);
+                graphicsHelper.SetSprite(cardType);
+            }
+        }
     }
     
     public Card GetNewCard(Player host){
-        if(tileType == "_normal" && cardType != -1){
+        if( (tileType == "_normal" || tileType == "_special") && cardType != -1){
             // return Card.newBoostCard(host);
             switch(cardType){
                 case 0:

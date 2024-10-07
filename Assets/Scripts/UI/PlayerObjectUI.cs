@@ -21,11 +21,7 @@ public class PlayerObjectUI : MonoBehaviour
 
     public void SetColor(){
         
-        // if(color != null){
-        //     spriteRenderer.color = color;
-        // }
-        // else{
-            spriteRenderer.color = Color.HSVToRGB(Random.value, 0.65f, 0.75f );
-        // }
+        spriteRenderer.color = Color.HSVToRGB(Random.value, 0.5f, 1f );
+        
     }
 }

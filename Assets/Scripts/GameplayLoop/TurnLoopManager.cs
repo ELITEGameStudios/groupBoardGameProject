@@ -12,14 +12,15 @@ public class TurnLoopManager : MonoBehaviour
     public int currentTurnState = 0; // 0 is pre-roll, 1 is during initial move, 2 is post first move
     public int rollOutcome = 0; // 0 is pre-roll, 1 is during initial move, 2 is post first move
     public static TurnLoopManager main { get; private set;}
+    [SerializeField] private Queue<AdditionalMovementQueueObject> sabotageQueue;
 
     void Awake() {
         if(main == null){ main = this; }
         else if(main != this ){ Destroy(this);}
-
+        sabotageQueue = new();
     }
 
-    void Start(){
+    public void StartGame(){
         StartCoroutine("MainLoopCoroutine"); // Starts the main game loop
 
     }
@@ -47,10 +48,12 @@ public class TurnLoopManager : MonoBehaviour
         }
     }
 
-
-
-    public void DoRollSystem(){
+    public void DoRollSystem(){ // Called by Unity UI to roll the dice
         requiresRoll = false;
+    }
+    public void QueueAdditionalMovement(Player player, int offset, int queueOldPosition, bool punch = false)
+    {
+        sabotageQueue.Enqueue(new AdditionalMovementQueueObject(player, offset, queueOldPosition, punch));
     }
 
     public bool AtMiddle {
@@ -120,13 +123,7 @@ public class TurnLoopManager : MonoBehaviour
             else if(newPosition < MapManager.main.outerTilesLength && PlayerAtMiddle(player)){ // Player is being sabotaged back from the middle tiles
                 int difference = newPosition - player.boardPosition;
 
-                // Debug.Log(newPosition+ " IS THE NEW POSITION");
-                // Debug.Log(difference + " IS THE DIFFERENCE");
-
-                Debug.Log( MapManager.main.GetMiddleTile().index );
                 newPosition = MapManager.main.GetMiddleTile().index + (difference+1 - (MapManager.main.outerTilesLength - player.boardPosition));
-                
-                // Debug.Log(newPosition+ " IS THE NEW NEW POSITION");
             }
 
         }
@@ -134,11 +131,10 @@ public class TurnLoopManager : MonoBehaviour
             // If this condition is met, the player has completed a loop and is now trying to access a position thats not on the board
             // We correct this by setting the position to the difference between the max outer tile index and the projected position
             newPosition -= MapManager.main.outerTilesLength;
-            player.AddLap(); // Adding a lap to the player's data
+            player.EndGame(); // Adding a lap to the player's data
         }
         if(newPosition < 0 && !middle){ newPosition = 0; }
 
-        Debug.Log("Moved the player to " + newPosition.ToString());
         player.SetNewPosition(newPosition);
         currentTurnState = 2;
         // CheckCards();
@@ -170,26 +166,153 @@ public class TurnLoopManager : MonoBehaviour
         }
     }
 
+    bool PlayerMovingForwards( Player player, int playerOldPos, int playerNewPos) { // With the tile system and order in place, its hard to tell if the player is going forwards or backwards without these conditions
+        if( player == null ){return false;}
+        if(playerNewPos > playerOldPos){ return true; }
+        if(PlayerAtMiddle(player) && playerNewPos >= MapManager.main.GetMiddleTile(false).index){ return true; }
+        // if(playerNewPos >= MapManager.main.GetMiddleTile(false).index){ return true; } for laps
+        return false;
+    }
+
+    IEnumerator MoveAnimationCoroutine(int oldPosition, int newPosition, Player player, bool punch = false){ // Responsible for the animation of players moving forwards or backwards
+        List<Vector2> positions = new List<Vector2>();
+        bool forwards = newPosition > oldPosition;
+        punch = true; // A tentative solution for some problems the animator is facing at the moment
+
+        if(!punch){
+
+            if(PlayerMovingForwards(player, oldPosition, newPosition)){ // If the player is moving forwards
+                if(newPosition > MapManager.main.outerTilesLength && oldPosition < MapManager.main.outerTilesLength){ // If the player is transitioning to the middle tiles
+                    Debug.Log("FIRE IN THE HOLEE");
+                    for (int i = oldPosition; i <= MapManager.main.GetMiddleTile().index; i++)
+                    { positions.Add(MapManager.main.GetTile(i).gameObject.transform.position); } 
+                    
+                    for (int i = MapManager.main.outerTilesLength; i <= newPosition; i++)
+                    { positions.Add(MapManager.main.GetTile(i).gameObject.transform.position); } 
+
+                }
+                else if(oldPosition > MapManager.main.outerTilesLength && newPosition < MapManager.main.outerTilesLength){ // If the player is transitioning from the middle back to the main course
+                    Debug.Log("WATER ON THE HILL");
+                    
+                    for (int i = oldPosition; i < MapManager.main.totalTiles; i++)
+                    { positions.Add(MapManager.main.GetTile(i).gameObject.transform.position); } 
+                    
+                    for (int i = MapManager.main.GetMiddleTile(false).index; i <= newPosition; i++)
+                    { positions.Add(MapManager.main.GetTile(i).gameObject.transform.position); } 
+
+                }
+                else{ // There are no transitions happening this move
+                    Debug.Log("AIR DETECTED");
+                    for (int i = oldPosition; i <= newPosition; i++)
+                    { positions.Add(MapManager.main.GetTile(i).gameObject.transform.position); } 
+                }
+            }
+            else{ // The player is moving backwards
+
+                if(newPosition < MapManager.main.outerTilesLength && oldPosition > MapManager.main.outerTilesLength){ // If the player is transitioning from the middle to the outer tiles
+                    
+                    for (int i = oldPosition; i > MapManager.main.GetMiddleTile().index; i--)
+                    { positions.Add(MapManager.main.GetTile(i).gameObject.transform.position); } 
+                    
+                    for (int i = MapManager.main.GetMiddleTile().index; i >= newPosition; i--)
+                    { positions.Add(MapManager.main.GetTile(i).gameObject.transform.position); } 
+
+                }
+                else{
+                    for (int i = oldPosition; i >= newPosition; i--)
+                    { positions.Add(MapManager.main.GetTile(i).gameObject.transform.position); } 
+                }
+
+            }
+        }
+        else{
+            Debug.Log("PUNCHED!");
+            positions.Add(MapManager.main.GetTile(oldPosition).gameObject.transform.position);
+            positions.Add(MapManager.main.GetTile(newPosition).gameObject.transform.position);
+        }
+
+        
+        Vector2 newPositionVector = MapManager.main.GetTile(newPosition).gameObject.transform.position;
+        player.gameObject.transform.position = MapManager.main.GetTile(oldPosition).gameObject.transform.position;
+        
+        float timer = 0;
+        float stepTime = 0.15f;
+
+
+        for (int i = 0; i < positions.Count; i++)
+        {
+            Vector2 currentPos = player.gameObject.transform.position;
+            timer = stepTime;
+            while (timer > 0)
+            {
+                player.gameObject.transform.position = Vector2.Lerp(positions[i], currentPos, 0.5f * Mathf.Sin(Mathf.PI * (timer/stepTime - 0.5f)) + 0.5f); 
+                timer -= Time.deltaTime;
+                yield return null;
+            }
+            player.gameObject.transform.position = positions[i];
+        }
+        player.gameObject.transform.position = newPositionVector;
+    }
+
+    IEnumerator CheckOddMovementCoroutine(){ 
+
+        /*  
+            This system is in place to queue, process, and animate any movement that is not the current players roll.
+
+            Objects outside of the TurnLoopManager will be able to queue any extra moves done to any player within a turn
+            They do this by calling QueueAdditionalMovement() which creates an AdditionalMovementQueueObject and adds that to the queue
+            This coroutine is executed at the beginning and end of the main loop to ensure that these moves are done at the right time
+
+        */
+
+        AdditionalMovementQueueObject nextSabotageEvent; 
+        sabotageQueue.TryPeek(out nextSabotageEvent); // Tries to retrieve the next queued object
+        
+        while(nextSabotageEvent != null){// Executes as long as there is another object in the queue
+            CardUIManager.main.SetUIRetract(true);
+            
+            MovePlayerPosition(nextSabotageEvent.oldPosition + nextSabotageEvent.offset, nextSabotageEvent.player, PlayerAtMiddle(nextSabotageEvent.player)); // Moves the player's position accordingly 
+            yield return StartCoroutine(MoveAnimationCoroutine(nextSabotageEvent.oldPosition, nextSabotageEvent.player.boardPosition, nextSabotageEvent.player, nextSabotageEvent.punch)); // Plays the movement animation  
+            
+            sabotageQueue.Dequeue();
+            sabotageQueue.TryPeek(out nextSabotageEvent); // Tries to retrieve the next queued object. Will break the loop if the queue has finished
+        }
+    }
+
 
     IEnumerator MainLoopCoroutine(){
         
+
         // As long as this loop continues, the game will continue... forever
         while(true){
+            // IEnumerator
             /* Preroll phase */
+
+            Debug.Log(Player.players.Count);
+            Debug.Log(GameManager.main.currentPlayerIndex);
 
             CustomEventSystem.TriggerNewTurn();
             CardUIManager.main.SetCardUI();
+            CardUIManager.main.SetUIRetract(false);
+
+            int oldPosition = Player.current.boardPosition;
 
             // Ensures that a player will need to provide input before proceeding loop repeats            
             requiresRoll = true;
-            while(requiresRoll) {yield return null; } // Halts execution until the player wants to roll
-            yield return StartCoroutine("RollAnimationCoroutine");
+            while(requiresRoll) { // Halts execution until the player wants to roll
+                yield return StartCoroutine(CheckOddMovementCoroutine());
+                yield return null; 
+            } 
+            CardUIManager.main.SetUIRetract(true);
+            
+            yield return StartCoroutine("RollAnimationCoroutine"); // Triggers the roll animation
 
             /* Roll phase */
             Roll(); // Rolls and generates outcome
             GlobalUI.main.GetRollOutcomeText().text = rollOutcome.ToString(); // Sets UI To show Roll 
             CustomEventSystem.TriggerPrePlayerMove(); // Any logic to modify the outcome or game events before projecting position
             ProjectPosition(); // Projects the new position of the player and prompts for middle condition if needed
+
 
             /* Middle choice and player movement phase */
             if(requiresMiddleCondition){ // Checks if the middle condition is required
@@ -200,23 +323,38 @@ public class TurnLoopManager : MonoBehaviour
             else{
                 MovePlayerPosition(projectedPosition, Player.current, AtMiddle, rollOutcome); // A standard roll and move if the ccondition is not required
             }
-
+            yield return StartCoroutine(MoveAnimationCoroutine(oldPosition, Player.current.boardPosition, Player.current));
+            
             /* Post movement phase */
 
             // Custom logic at this phase including card effects
-            CustomEventSystem.TriggerPosInitMove(true);
+            CustomEventSystem.TriggerPosInitMove();
             
             // Background card management
             CheckPostMoveCards();
             Player.current.PickupNewTileCard();
 
+            yield return StartCoroutine(CheckOddMovementCoroutine()); 
+
             // Extra turn handler
             if(!extraTurn){  GameManager.main.NextTurn(); }
-            else{ extraTurn = !extraTurn; }
+            else{ extraTurn = !extraTurn; Debug.Log("RAHHHH"); } 
             
-            
-            Debug.Log("Finished main gameloop iteration! Starting again!");
+            yield return new WaitForSeconds(1.5f);
         }
     }
 
+}
+
+public class AdditionalMovementQueueObject
+{
+    public Player player;
+    public int offset, oldPosition;
+    public bool punch;
+    public AdditionalMovementQueueObject(Player player, int offset, int oldPosition, bool punch = false){
+        this.player = player;
+        this.offset = offset;
+        this.oldPosition = oldPosition; 
+        this.punch = punch; 
+    }
 }

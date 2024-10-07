@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,16 +13,18 @@ public class GameManager : MonoBehaviour
     public int currentPlayerIndex {get; private set;}
     public bool twoDice {get; private set;}
     public bool hasStarted {get; private set;}
-    [SerializeField] private GameObject playerPrefab; 
+    [SerializeField] private GameObject playerPrefab, winScreen; 
     public GameObject GetPlayerPrefab {get {return playerPrefab;} } 
     public List<string> playerNames; 
     [SerializeField] private TMP_Text playerTurnDisplay;
+    [SerializeField] private Text endGameDisplay;
+    public Sprite[] playerSprites;
 
 
 
 
     /* --- Welcome to the GameManager! ---
-        Here I (Noah) will describe some general things when using this game's framework.
+        Here, the general framework will be described.
 
         Players and their data are represented in instances of the Player script. Find this script in Scripts/Framework to learn more
         The main loop is held in TurnLoopManager located in Scripts/GameplayLoop
@@ -30,7 +34,7 @@ public class GameManager : MonoBehaviour
         The Card System which handles some card related functionality is found in Scripts/Framework
         Scripts handling most of the changing UI elements are found under Scripts/UI
         The custom event system sccript is found under Scripts/Framework, and defines interfaces which any class can inherit, to implement functionality on custom events in the game
-            Cards specifically may use this quite a bit
+        Cards specifically use this most 
 
         The GameManager itself doesn't handle much (in an ideal world, I probably shouldve implemented everything in the TurnLoopManager into this instead)
         The GameManager DOES start the game, handles some initialization functions, and also stores the current player index controlling who's turn it is
@@ -54,16 +58,16 @@ public class GameManager : MonoBehaviour
     void Start(){
         // This is here for the time that there isnt a menu before starting the actual game
         // This should be removed once a main menu has been implemented
-        BeginGame();
+        // BeginGame();
+        playerNames = new List<string>();
     }
 
     public void BeginGame(){
-        playerNames = new List<string>();
-        playerNames.Add("1690");
-        playerNames.Add("2056");
-        playerNames.Add("254");
-        playerNames.Add("1323");
-        playerNames.Add("4414");
+        // playerNames.Add("1690");
+        // playerNames.Add("2056");
+        // playerNames.Add("254");
+        // playerNames.Add("1323");
+        // playerNames.Add("4414");
         // playerNames.Add("5460");
         // playerNames.Add("3357");
         // playerNames.Add("118");
@@ -71,11 +75,19 @@ public class GameManager : MonoBehaviour
         // playerNames.Add("5406");
         // playerNames.Add("5409");
         // playerNames.Add("5596");
+        // playerNames.Add("9569");
+        // playerNames.Add("Killbox Enjoyer");
+        // playerNames.Add("Freddy Fazbear");
+        // playerNames.Add("Kendrick Lamar");
+        // playerNames.Add("One of those people");
+        currentPlayerIndex = 0;
         SetPlayers();
 
-        currentPlayerIndex = 0;
         hasStarted = true;
+        TurnLoopManager.main.StartGame();
     } 
+
+    public void AddName(string newName){playerNames.Add(newName);}
 
     public void SetPlayers(){
         // Tells the player class to generate the players with these given names
@@ -85,6 +97,8 @@ public class GameManager : MonoBehaviour
             // Creates the gameObjects which represent the players
             player.SetGameObject(Instantiate(GameManager.main.GetPlayerPrefab, MapManager.main.GetMapHostTransform));
         }
+
+        CardUIManager.main.Initialize();
     }
 
     public void NextTurn(){
@@ -96,9 +110,20 @@ public class GameManager : MonoBehaviour
         SetTurnUI();
     }
 
+    public void ToggleWinScreen(){
+        // Goes to the next player in line
+        winScreen.SetActive(true);
+        endGameDisplay.text = Player.current.name.ToUpper() + " WINS!";
+    }
+
     void SetTurnUI(){
         // A simple piece of text denoting who's turn it is
         playerTurnDisplay.text = Player.current.name + "'s Turn!";
+    }
+
+    public void ReloadScene(){
+        // A simple piece of text denoting who's turn it is
+        SceneManager.LoadScene("NoahScene");
     }
 
 }

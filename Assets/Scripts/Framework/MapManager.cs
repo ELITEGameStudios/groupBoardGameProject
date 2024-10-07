@@ -39,8 +39,8 @@ public class MapManager : MonoBehaviour
         // TilesPerSide must be an odd number in order to properly generate in compliance with middle tiles
         // TilesPerSide must be at least 3
         tilesPerSide = 7; // Default value
-        GenerateMap();
-        SetMapTiles();
+        // GenerateMap();
+        
 
         // SetMapGenerationVariables();
 
@@ -73,11 +73,19 @@ public class MapManager : MonoBehaviour
 
         return result;
     }
+    public List<MapTile> GetSpecialTiles(){
+        List<MapTile> result = new List<MapTile>();
+
+        foreach (MapTile tile in mapTiles){
+            if (tile.tileType == "_special"){result.Add(tile);}
+        }
+
+        return result;
+    }
 
     public int GetSpotsPastMiddleConnector(int position){ // Only works for outer tiles
         MapTile tile = GetMiddleTile();
         if(tile != null){
-            Debug.Log(" SPOTS PAST MID CONNECTOR: " + (position - tile.index));
             return (position - tile.index);
         }
 
@@ -97,6 +105,10 @@ public class MapManager : MonoBehaviour
         
         // The amount of normal tiles in the map
         normalTiles = (4 * tilesPerSide) + (middleTilesLength - 1);
+    }
+
+    public void SetMapSize(int size){
+        tilesPerSide = size;
     }
 
     // Generates the main map with the given variables
@@ -125,11 +137,22 @@ public class MapManager : MonoBehaviour
                 switch(i){ // Checks to add the required middle connector attributes
                     case 0:
                         if(j == tilesPerSide-2){ mapTiles.Add(new MapTile(assignedIndex, "_normal", 0)); } // The first middle connector tile
-                        else{ mapTiles.Add(new MapTile(assignedIndex, "_normal")); }
+                        else{ 
+                            if(j > tilesPerSide-2 && Random.Range(0, 5) == 1){ 
+                                mapTiles.Add(new MapTile(assignedIndex, "_special")); 
+                                continue;}
+                            mapTiles.Add(new MapTile(assignedIndex, "_normal")); }
                         
                         break;
+
+                    case 1:
+                        if( Random.Range(0, 5) == 1){  mapTiles.Add(new MapTile(assignedIndex, "_special"));  }
+                        else{mapTiles.Add(new MapTile(assignedIndex, "_normal"));}
+                        break;
+                        
                     case 2:
                         if(j == tilesPerSide-2){ mapTiles.Add(new MapTile(assignedIndex, "_normal", 1)); } // The second middle connector tile
+                        else if(j < tilesPerSide-2 && Random.Range(0, 5) == 1){  mapTiles.Add(new MapTile(assignedIndex, "_special"));  }
                         else{ mapTiles.Add(new MapTile(assignedIndex, "_normal")); }
 
                         break;
@@ -138,14 +161,11 @@ public class MapManager : MonoBehaviour
                         break;
                 }
 
-                Debug.Log(assignedIndex + " | " + mapTiles[mapTiles.Count-1].tileType);
 
                 // Always adds one to the index that should be assigned, since all cases add another map tile
                 assignedIndex++;
 
             }
-
-            Debug.Log("Completed corner"+i);
 
             // At the end of each side
             if(i != 3){
@@ -240,7 +260,6 @@ public class MapManager : MonoBehaviour
         {
             GameObject tileObj;
 
-            Debug.Log( (sideUnitsMidpoint-2).ToString()+" || " + i);
 
             if(i < sideUnitsMidpoint-2){ // Bottom left mid
 
@@ -270,11 +289,6 @@ public class MapManager : MonoBehaviour
         Debug.Log("Middle Map Generated | Map tile GAMEOBJECT generation complete...");
 
         // Assigning gameObjects to maptile objects
-
-        Debug.Log("MapTiles count: " + mapTiles.Count);
-        Debug.Log("gameTiles count: " + gameTiles.Count);
-        Debug.Log("OuterTilesLength: " + outerTilesLength);
-        Debug.Log("MiddleTilesLength: " + middleTilesLength);
         
 
         for (int i = 0; i < mapTiles.Count; i++)
@@ -285,11 +299,15 @@ public class MapManager : MonoBehaviour
         Debug.Log("Assigned gameObjects to map tile object...");
 
         camera.transform.position = new Vector3( tilesPerSide+1, tilesPerSide+1, -10);
-        camera.orthographicSize= tilesPerSide+3;
+        camera.orthographicSize= tilesPerSide+5;
+
+        SetMapTiles();
     }
 
     public void SetMapTiles(){
         List<MapTile> normalTiles = GetNormalTiles();
+        List<MapTile> specialTiles= GetSpecialTiles();
+
         int totalCount = normalTiles.Count;
 		
 		for (int i = 0; i < totalCount-1; i++) {
@@ -304,6 +322,11 @@ public class MapManager : MonoBehaviour
             normalTiles[i].SetTileType(index);
             index++;
             if(index == 4){ index = 0; }
+        }
+
+        foreach (MapTile special in specialTiles)
+        {
+            special.SetTileType(5);
         }
 
 	}

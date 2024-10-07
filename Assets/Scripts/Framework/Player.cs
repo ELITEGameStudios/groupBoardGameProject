@@ -77,11 +77,13 @@ public class Player
         }
     }
 
-    public void AddLap(){
-        laps++;
-        if(laps == 3 ){
-            // End game here with this player as the winner
-        }
+    public void EndGame(){
+        GameManager.main.ToggleWinScreen();
+        players.Clear();
+        // laps++;
+        // if(laps == 3 ){
+        //     // End game here with this player as the winner
+        // }
     }
 
     public void SetNewPosition(int newPos, bool newCard = true){
@@ -110,6 +112,7 @@ public class Player
             gameObject = _gameObject;
             gameObject.transform.position = MapManager.main.GetTile(boardPosition).gameObject.transform.position;
             graphicsHelper = gameObject.GetComponent<PlayerObjectUI>();
+            gameObject.GetComponent<SpriteRenderer>().sprite = GameManager.main.playerSprites[Random.Range(0, GameManager.main.playerSprites.Length)];
             graphicsHelper.SetName(name);
         }
     }
@@ -127,9 +130,11 @@ public class Player
                 players.Add(new Player(_name));
             }
             playerCount = players.Count;
+        Debug.Log("InitializedPlayers");
         }
         else{
             Debug.Log("Players have already been initialized!");
         }
+        Debug.Log("AllegedlyInitializedPlayers");
     }
 }
