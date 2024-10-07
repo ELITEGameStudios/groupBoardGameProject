@@ -114,6 +114,7 @@ public class GameManager : MonoBehaviour
         // Goes to the next player in line
         winScreen.SetActive(true);
         endGameDisplay.text = Player.current.name.ToUpper() + " WINS!";
+        TurnLoopManager.main.StopMainLoop();
     }
 
     void SetTurnUI(){

@@ -28,6 +28,15 @@ public class SabotageDefender : Card, ITurnSwitchListener
     
     public override void Retire(){
         Debug.Log($"BYEBYE");
+        for (int i = 0; i < host.currentDeck.Count; i++){
+            if(host.currentDeck[i] != null && host.currentDeck[i] != this){
+                if(host.currentDeck[i] is SabotageDefender){
+                    base.Retire();
+                    return;     
+                }
+            }
+        }
+        
         host.SabotageProtected(false);
         base.Retire();
     }

@@ -124,7 +124,7 @@ public class Player
     public static void InitializePlayers(List<string> playerNames){
         // Generates the list of players in the game with the name given to it
         // Can only be done if the players are not yet generated
-        if(players == null){
+        if(players == null || players.Count == 0){
             players = new List<Player>();
             foreach(string _name in playerNames){
                 players.Add(new Player(_name));

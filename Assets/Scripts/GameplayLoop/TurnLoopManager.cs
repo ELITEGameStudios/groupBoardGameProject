@@ -276,7 +276,12 @@ public class TurnLoopManager : MonoBehaviour
             
             sabotageQueue.Dequeue();
             sabotageQueue.TryPeek(out nextSabotageEvent); // Tries to retrieve the next queued object. Will break the loop if the queue has finished
+            if(nextSabotageEvent == null){CardUIManager.main.SetUIRetract(false);}
         }
+    }
+
+    public void StopMainLoop(){
+        StopCoroutine("MainLoopCoroutine");
     }
 
 
